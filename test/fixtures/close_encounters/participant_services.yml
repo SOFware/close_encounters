@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+aliens:
+  name: aliens
+  connection_info:
+    key: "123"
+    secret: "456"
+
+others:
+  name: others
+  connection_info:
+    user: "user"
+    password: "password"
