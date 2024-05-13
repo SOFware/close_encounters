@@ -14,7 +14,7 @@ module CloseEncounters
       service.events.create!(status: 200, response: "OK")
       event2 = service.events.create!(status: 404, response: "Not Found")
 
-      assert_equal event2, ParticipantEvent.newest
+      assert_equal event2, ParticipantEvent.newest.first
     end
   end
 end

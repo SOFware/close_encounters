@@ -14,7 +14,7 @@ module CloseEncounters
   # @param response [String] the response object
   def contact(name, status:, response:)
     service = ParticipantService.find_by!(name:)
-    unless service.events.newest.status == status
+    unless service.events.newest.pick(:status) == status
       service.events.create!(status: status, response:)
     end
   end
@@ -24,7 +24,7 @@ module CloseEncounters
   # @param name [String] the name of the service
   # @return [Integer] the HTTP status of the most recent contact
   def status(name)
-    ParticipantService.find_by!(name: name).events.newest.status
+    ParticipantService.find_by!(name: name).events.newest.pick(:status)
   end
 
   # Ensure that a participant service exists
