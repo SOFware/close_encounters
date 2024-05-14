@@ -1,4 +1,7 @@
 # CloseEncounters
+
+… of the Third Party.
+
 Add serices and events that can track responses from third-party services.
 
 ## Usage
@@ -23,6 +26,12 @@ CloseEncounters.status("SomeThirdPartyService") # => 200
 # evuntually you use `contact` and it records a 500 and you'll be able to get
 CloseEncounters.status("SomeThirdPartyService") # => 500
 ```
+
+### TODO
+
+- [ ] Add JS to the gem to track events on the front-end.
+- [ ] Add a UI to create and manage services.
+- [ ] Add a UI to view events.
 
 ## Installation
 Add this line to your application's Gemfile:
