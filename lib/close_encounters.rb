@@ -33,7 +33,7 @@ module CloseEncounters
   # @param connection_info [Hash] the connection information for the service
   def ensure_service(name, connection_info: {})
     ParticipantService.find_or_create_by!(name: name) do |service|
-      service.connection_info = connection_info
+      service.connection_info = connection_info unless service.connection_info.present?
     end
   end
 end

@@ -52,5 +52,14 @@ module CloseEncounters
 
       _(ParticipantService.where(name: "aliens").count).must_equal 1
     end
+
+    test ".ensure_service does not overwrite the connection info if it exists" do
+      service = close_encounters_participant_services(:aliens)
+      service.update!(connection_info: {"key" => "value"})
+
+      CloseEncounters.ensure_service("aliens", connection_info: {"new_key" => "new_value"})
+
+      _(service.reload.connection_info).must_equal({"key" => "value"})
+    end
   end
 end
