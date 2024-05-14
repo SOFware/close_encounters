@@ -1,6 +1,8 @@
 module CloseEncounters
   class ParticipantService < ApplicationRecord
-    has_many :events, inverse_of: :participant_service, class_name: "CloseEncounters::ParticipantEvent"
+    has_many :events,
+      inverse_of: :participant_service,
+      class_name: "CloseEncounters::ParticipantEvent"
 
     validates :name, presence: true
 
