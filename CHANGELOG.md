@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 ### Added:
 - Support for Importmaps
+- `reissue` gem for managing releases
 
 ### Fixed:
 - Alter newest scope to properly return a relation limited to 1 record

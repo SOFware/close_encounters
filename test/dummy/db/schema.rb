@@ -27,5 +27,4 @@ ActiveRecord::Schema[7.1].define(version: 2024_05_08_190642) do
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_close_encounters_participant_services_on_name", unique: true
   end
-
 end

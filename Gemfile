@@ -15,3 +15,5 @@ gem "standard"
 gem "minitest-spec-rails"
 
 gem "simplecov"
+
+gem "reissue"

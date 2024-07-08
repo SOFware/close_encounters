@@ -117,6 +117,8 @@ GEM
     rdoc (6.6.3.1)
       psych (>= 4.0.0)
     regexp_parser (2.9.1)
+    reissue (0.2.0)
+      rake
     reline (0.5.7)
       io-console (~> 0.5)
     rexml (3.2.6)
@@ -173,6 +175,7 @@ DEPENDENCIES
   close_encounters!
   minitest-spec-rails
   puma
+  reissue
   simplecov
   sqlite3 (~> 1.4)
   standard
