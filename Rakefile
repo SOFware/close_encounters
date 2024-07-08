@@ -15,3 +15,10 @@ Rake::TestTask.new do |t|
 end
 
 task default: ["db:setup", "db:migrate", "app:environment", :test] # Modify default task
+
+require "reissue/gem"
+
+Reissue::Task.create :reissue do |task|
+  # Required: The file to update with the new version number.
+  task.version_file = "lib/close_encounters/version.rb"
+end
