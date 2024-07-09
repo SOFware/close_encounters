@@ -17,3 +17,4 @@ gem "minitest-spec-rails"
 gem "simplecov"
 
 gem "reissue"
+gem "debug"
