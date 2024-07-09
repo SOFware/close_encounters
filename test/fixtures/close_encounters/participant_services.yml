@@ -2,12 +2,16 @@
 
 aliens:
   name: aliens
-  connection_info:
-    key: "123"
-    secret: "456"
+  connection_info: >
+    {
+      "key": "123",
+      "secret": "456"
+    }
 
 others:
   name: others
-  connection_info:
-    user: "user"
-    password: "password"
+  connection_info: >
+    {
+      "user": "user"
+      "password": "password"
+    }

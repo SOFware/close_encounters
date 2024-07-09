@@ -10,6 +10,9 @@ module CloseEncounters
       serialize :connection_info, coder: JSON
     end
 
-    encrypts :connection_info
+    # ONLY encrypt if you have the necessary keys
+    if Rails.application.credentials.close_encounters_encryption_key.present?
+      encrypts :connection_info
+    end
   end
 end
