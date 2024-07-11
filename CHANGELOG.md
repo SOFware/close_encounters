@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.1.3] - Unreleased
 
+## Removed
+
+- Remove serialize connection_info for manual methods
+
 ## [0.1.2] - 2024-07-11
 
 ### Added
