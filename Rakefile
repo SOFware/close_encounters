@@ -9,12 +9,12 @@ require "bundler/gem_tasks"
 
 require "rake/testtask"
 
-Rake::TestTask.new do |t|
+Rake::TestTask.new(:test) do |t|
   t.libs << "test"
   t.pattern = "test/**/*_test.rb"
 end
 
-task default: ["db:reset", "db:migrate", "app:environment", :test] # Modify default task
+task default: ["db:drop", "db:create", "db:schema:load", "db:test:prepare", :test]
 
 require "reissue/gem"
 

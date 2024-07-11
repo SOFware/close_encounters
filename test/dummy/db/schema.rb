@@ -13,18 +13,20 @@
 ActiveRecord::Schema[7.1].define(version: 2024_05_08_190642) do
   create_table "close_encounters_participant_events", force: :cascade do |t|
     t.text "response"
-    t.integer "participant_service_id", null: false
+    t.integer "close_encounters_participant_service_id", null: false
     t.integer "status", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["participant_service_id"], name: "idx_on_participant_service_id_5277cdb984"
+    t.index ["close_encounters_participant_service_id"], name: "idx_on_close_encounters_participant_service_id_4e69f5fd33"
   end
 
   create_table "close_encounters_participant_services", force: :cascade do |t|
-    t.string "name"
+    t.string "name", null: false
     t.text "connection_info"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_close_encounters_participant_services_on_name", unique: true
   end
+
+  add_foreign_key "close_encounters_participant_events", "close_encounters_participant_services"
 end

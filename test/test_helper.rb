@@ -25,17 +25,8 @@ end
 
 Minitest.backtrace_filter = Minitest::BacktraceFilter.new
 
+ActiveRecord::Migration.maintain_test_schema!
 class ActiveSupport::TestCase
   # Make tests transactional
   self.use_transactional_tests = true
-
-  # Ensure database is migrated before tests are run
-  setup do
-    ActiveRecord::Migration.check_all_pending!
-  end
 end
-
-# Run migrations if they are pending
-ActiveRecord::Migration.maintain_test_schema!
-
-puts "Migrations: #{ActiveRecord::Base.connection.migration_context.get_all_versions}"

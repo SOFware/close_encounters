@@ -6,7 +6,7 @@ module CloseEncounters
 
     test ".contact creates a new event if the status has changed" do
       service = close_encounters_participant_services(:aliens)
-      service.events.create!(status: 200, response: "Yay! Everything worked.")
+      # _working_event = close_encounters_participant_events(:working)
 
       CloseEncounters.contact("aliens", status: 500, response: "Oops! Nothing worked.")
 
@@ -16,9 +16,9 @@ module CloseEncounters
 
     test ".contact does not create a new event if the status has not changed" do
       service = close_encounters_participant_services(:others)
-      service.events.create!(status: 200, response: "Yay! Everything worked.")
+      # _failing_event = close_encounters_participant_events(:failing)
 
-      CloseEncounters.contact("others", status: 200, response: "Yay! Everything worked.")
+      CloseEncounters.contact("others", status: 500, response: "Failed again.")
 
       _(service.events.count).must_equal 1
     end
