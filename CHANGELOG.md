@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Alter newest scope to properly return a relation limited to 1 record
 - Update ensure_service to not overwrite existing connection_info
 - Allow specs to run properly locally
+- Incorrect manifest paths for sprockets
 
 ## [0.1.0] - 2024-05-08
 
