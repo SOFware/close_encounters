@@ -5,24 +5,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.1.4] - Unreleased
+
 ## [0.1.3] - 2024-07-11
-
-## [] - 
-
-### 
-
-- [] -
-
-### Removed
-
-- Remove serialize connection_info for manual methods
-
-## [0.1.2] - 2024-07-11
-
-### Added
-
-- Check if the table exits before conditionally setting up the serialize column
-
-### Removed
-
-- Appending engine migrations to the main app's migration path
