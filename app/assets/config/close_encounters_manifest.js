@@ -1,1 +1,1 @@
-//= link_tree ../javascripts/close_encounters .js
+//= link_tree ../javascripts
