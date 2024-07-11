@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [] - 
 
+### 
+
+- [] -
+
 ### Removed
 
 - Remove serialize connection_info for manual methods
