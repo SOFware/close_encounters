@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Check if the table exits before conditionally setting up the serialize column
 
+### Removed
+
+- Appending engine migrations to the main app's migration path
+
 ## [0.1.1] - 2024-07-11
 
 ### Added
