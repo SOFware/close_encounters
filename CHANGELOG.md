@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.1.2] - Unreleased
 
+### Added
+
+- Check if the table exits before conditionally setting up the serialize column
+
 ## [0.1.1] - 2024-07-11
 
 ### Added
