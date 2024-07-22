@@ -80,7 +80,7 @@ GEM
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
     parallel (1.25.1)
-    parser (3.3.3.0)
+    parser (3.3.4.0)
       ast (~> 2.4.1)
       racc
     psych (5.1.2)
@@ -124,7 +124,7 @@ GEM
       rake
     reline (0.5.9)
       io-console (~> 0.5)
-    rexml (3.3.1)
+    rexml (3.3.2)
       strscan
     rubocop (1.64.1)
       json (~> 2.3)
@@ -151,7 +151,7 @@ GEM
     simplecov_json_formatter (0.1.4)
     sqlite3 (1.7.3)
       mini_portile2 (~> 2.8.0)
-    standard (1.39.1)
+    standard (1.39.2)
       language_server-protocol (~> 3.17.0.2)
       lint_roller (~> 1.0)
       rubocop (~> 1.64.0)
