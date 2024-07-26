@@ -1,9 +1,14 @@
+require_relative "middleware"
 module CloseEncounters
   class Engine < ::Rails::Engine
     isolate_namespace CloseEncounters
 
     config.generators do |g|
       g.test_framework :minitest, spec: true
+    end
+
+    initializer "close_encounters.middleware" do |app|
+      app.middleware.use CloseEncounters::Middleware if CloseEncounters.auto_contact?
     end
 
     if defined?(Importmap)

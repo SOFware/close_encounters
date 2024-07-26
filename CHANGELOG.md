@@ -7,4 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.1.4] - Unreleased
 
+### Added
+
+- Ability to use CloseEncounters::Middleware and CloseEncounters.auto_contact! to automatically track responses from third-party services.
+
 ## [0.1.3] - 2024-07-11

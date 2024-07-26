@@ -19,6 +19,22 @@ module CloseEncounters
     end
   end
 
+  # Determine if contacts with third party services should be recorded automatically
+  # using the Rack Middleware
+  #
+  # Set the CLOSE_ENCOUNTERS_AUTO_CONTACT environment variable to enable this feature
+  # or call CloseEncounters.auto_contact! in an initializer
+  #
+  # @return [Boolean] whether or not to automatically record contacts
+  def auto_contact?
+    !!(ENV["CLOSE_ENCOUNTERS_AUTO_CONTACT"] || @auto_contact)
+  end
+
+  # Enable automatic contact recording in the Rack Middleware
+  def auto_contact!
+    @auto_contact = true
+  end
+
   # Get the status of the most recent contact with a third party service
   #
   # @param name [String] the name of the service
