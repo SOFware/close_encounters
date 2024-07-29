@@ -1,0 +1,38 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      # Set up
+      - uses: actions/checkout@v4
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          ruby-version: ruby
+
+      - name: Setup Signed Committer
+        run: git config --global user.signingkey ${{ secrets.GPG_KEY }}
+      - name: Setup GPG
+        run: echo "${{ secrets.GPG_KEY }}" | base64 --decode | gpg --import
+      - name: Setup Git
+        run: git config --global user.email "${{ secrets.GIT_EMAIL }}" && git config --global user.name "${{ secrets.GIT_NAME }}"
+
+      # Release
+      - uses: rubygems/release-gem@v1
+
+      - name: Push changes with the version bump
+        run: |
+          git push origin main
+          git push origin --tags
