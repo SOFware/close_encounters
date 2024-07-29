@@ -27,6 +27,23 @@ CloseEncounters.status("SomeThirdPartyService") # => 200
 CloseEncounters.status("SomeThirdPartyService") # => 500
 ```
 
+### Rack Middleware
+
+Setup your middleware in your `config/application.rb` or `config/environments/production.rb`.
+
+```ruby
+config.middleware.use CloseEncounters::Middleware
+```
+
+This will automatically track responses from third-party services when you store a "domain" key in the
+`connection_info` in the ParticipantService records.
+
+Alternatively, you can use the `auto_contact!` method to automatically turn on the rack middleware:
+
+```ruby
+CloseEncounters.auto_contact!
+```
+
 ### TODO
 
 - [ ] Add JS to the gem to track events on the front-end.
