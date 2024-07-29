@@ -4,6 +4,24 @@ module CloseEncounters
   class CloseEncountersTest < ActiveSupport::TestCase
     fixtures :all
 
+    test ".auto_contact? returns true if the environment variable is set" do
+      begin
+        ENV["CLOSE_ENCOUNTERS_AUTO_CONTACT"] = "true"
+        _(CloseEncounters.auto_contact?).must_equal true
+      ensure
+        ENV.delete("CLOSE_ENCOUNTERS_AUTO_CONTACT")
+      end
+    end
+
+    test ".auto_contact? returns false if the environment variable is not set" do
+      _(CloseEncounters.auto_contact?).must_equal false
+    end
+
+    test ".auto_contact! enables automatic contact recording" do
+      CloseEncounters.auto_contact!
+      _(CloseEncounters.auto_contact?).must_equal true
+    end
+
     test ".contact creates a new event if the status has changed" do
       service = close_encounters_participant_services(:aliens)
       # _working_event = close_encounters_participant_events(:working)
