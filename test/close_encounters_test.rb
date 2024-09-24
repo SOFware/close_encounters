@@ -5,15 +5,14 @@ module CloseEncounters
     fixtures :all
 
     test ".auto_contact? returns true if the environment variable is set" do
-      begin
-        ENV["CLOSE_ENCOUNTERS_AUTO_CONTACT"] = "true"
-        _(CloseEncounters.auto_contact?).must_equal true
-      ensure
-        ENV.delete("CLOSE_ENCOUNTERS_AUTO_CONTACT")
-      end
+      ENV["CLOSE_ENCOUNTERS_AUTO_CONTACT"] = "true"
+      _(CloseEncounters.auto_contact?).must_equal true
+    ensure
+      ENV.delete("CLOSE_ENCOUNTERS_AUTO_CONTACT")
     end
 
     test ".auto_contact? returns false if the environment variable is not set" do
+      ENV.delete("CLOSE_ENCOUNTERS_AUTO_CONTACT")
       _(CloseEncounters.auto_contact?).must_equal false
     end
 
