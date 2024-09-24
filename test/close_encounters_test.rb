@@ -13,6 +13,7 @@ module CloseEncounters
 
     test ".auto_contact? returns false if the environment variable is not set" do
       ENV.delete("CLOSE_ENCOUNTERS_AUTO_CONTACT")
+      CloseEncounters.remove_instance_variable(:@auto_contact) if CloseEncounters.instance_variable_defined?(:@auto_contact)
       _(CloseEncounters.auto_contact?).must_equal false
     end
 
