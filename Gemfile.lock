@@ -64,7 +64,7 @@ GEM
     i18n (1.14.6)
       concurrent-ruby (~> 1.0)
     io-console (0.7.2)
-    irb (1.14.0)
+    irb (1.14.1)
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
     json (2.7.2)
@@ -87,7 +87,7 @@ GEM
     parser (3.3.5.0)
       ast (~> 2.4.1)
       racc
-    psych (5.1.2)
+    psych (5.2.0)
       stringio
     puma (6.4.3)
       nio4r (~> 2.0)
@@ -97,9 +97,8 @@ GEM
       rack (>= 3.0.0)
     rack-test (2.1.0)
       rack (>= 1.3)
-    rackup (2.1.0)
+    rackup (2.2.0)
       rack (>= 3)
-      webrick (~> 1.8)
     rails-controller-testing (1.0.5)
       actionpack (>= 5.0.1.rc1)
       actionview (>= 5.0.1.rc1)
@@ -126,7 +125,7 @@ GEM
     regexp_parser (2.9.2)
     reissue (0.3.0)
       rake
-    reline (0.5.10)
+    reline (0.5.11)
       io-console (~> 0.5)
     rubocop (1.66.1)
       json (~> 2.3)
@@ -165,7 +164,7 @@ GEM
     standard-performance (1.5.0)
       lint_roller (~> 1.1)
       rubocop-performance (~> 1.22.0)
-    stringio (3.1.1)
+    stringio (3.1.2)
     thor (1.3.2)
     timeout (0.4.2)
     tzinfo (2.0.6)
@@ -173,8 +172,7 @@ GEM
     unicode-display_width (2.6.0)
     uri (1.0.1)
     useragent (0.16.10)
-    webrick (1.8.2)
-    zeitwerk (2.6.18)
+    zeitwerk (2.7.1)
 
 PLATFORMS
   ruby
