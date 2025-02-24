@@ -6,7 +6,7 @@ gemspec
 
 gem "puma"
 
-gem "sqlite3", "~> 2.5"
+gem "sqlite3", "~> 2.6"
 
 gem "standard"
 
