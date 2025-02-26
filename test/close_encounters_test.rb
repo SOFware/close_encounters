@@ -45,6 +45,23 @@ module CloseEncounters
       expect { CloseEncounters.contact("service", status: 200, response: "Yay! Everything worked.") }.must_raise ActiveRecord::RecordNotFound
     end
 
+    class Verification
+      def call(response)
+        response == "Yay! Everything worked."
+      end
+
+      def to_s
+        "Verification"
+      end
+    end
+
+    test ".verify creates a new event if the status and verification are met" do
+      service = close_encounters_participant_services(:aliens)
+      CloseEncounters.verify("aliens", status: 200, response: "Yay! Everything worked.", verifier: Verification.new)
+      CloseEncounters.verify("aliens", status: 200, response: "Nope! Everything failed.", verifier: Verification.new)
+      _(service.events.count).must_equal 2
+    end
+
     test ".status returns the status of the most recent event" do
       service = close_encounters_participant_services(:aliens)
       service.events.create!(status: 200, response: "Yay! Everything worked.")
