@@ -18,7 +18,8 @@ module CloseEncounters
       middleware = CloseEncounters::Middleware.new(@app, tracker: @mock)
 
       env = {"SERVER_NAME" => "service.example"}
-      middleware.call(env)
+      result = middleware.call(env)
+      assert_equal [200, env, "app"], result
     end
 
     test "does not call contact when domain doesn't match" do
