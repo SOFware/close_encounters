@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    close_encounters (0.2.0)
+    close_encounters (0.2.1)
       actionpack
       actionview
       activerecord
