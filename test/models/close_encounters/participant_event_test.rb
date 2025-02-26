@@ -16,5 +16,11 @@ module CloseEncounters
 
       assert_equal event2, ParticipantEvent.newest.first
     end
+
+    it "can store metadata" do
+      service = ParticipantService.create!(name: "test")
+      event = service.events.create!(status: 200, response: "OK", metadata: {foo: "bar"})
+      assert_equal({"foo" => "bar"}, event.metadata)
+    end
   end
 end
