@@ -10,13 +10,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_05_08_190642) do
+ActiveRecord::Schema[8.0].define(version: 2025_02_25_232551) do
   create_table "close_encounters_participant_events", force: :cascade do |t|
     t.text "response"
     t.integer "close_encounters_participant_service_id", null: false
     t.integer "status", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "metadata"
     t.index ["close_encounters_participant_service_id"], name: "idx_on_close_encounters_participant_service_id_4e69f5fd33"
   end
 

@@ -14,5 +14,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Ability to use CloseEncounters::Middleware and CloseEncounters.auto_contact! to automatically track responses from third-party services.
+- Add metadata to events for storing extra information about the event.
 
 ## [0.1.3] - 2024-07-11
