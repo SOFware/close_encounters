@@ -55,10 +55,10 @@ module CloseEncounters
       end
     end
 
-    test ".verify creates a new event if the status and verification are met" do
+    test ".scan creates a new event if the status and verification are met" do
       service = close_encounters_participant_services(:aliens)
-      CloseEncounters.verify("aliens", status: 200, response: "Yay! Everything worked.", verifier: Verification.new)
-      CloseEncounters.verify("aliens", status: 200, response: "Nope! Everything failed.", verifier: Verification.new)
+      CloseEncounters.scan("aliens", status: 200, response: "Yay! Everything worked.", verifier: Verification.new)
+      CloseEncounters.scan("aliens", status: 200, response: "Nope! Everything failed.", verifier: Verification.new)
       _(service.events.count).must_equal 2
     end
 

@@ -29,12 +29,14 @@ module CloseEncounters
   # @param status [Integer] the HTTP status of the contact
   # @param response [String] the response object
   # @param verifier [Proc] the verification callable which must also respond to to_s
-  def verify(name, status:, response:, verifier:)
+  def scan(name, status:, response:, verifier:)
     service = ParticipantService.find_by!(name:)
     unless service.events.newest.pick(:status) == status && (verified = verifier.call(response))
       service.events.create!(status:, response:, metadata: {verified:, verification: verifier.to_s})
     end
   end
+  alias_method :verify, :scan
+  module_function :verify
 
   # Determine if contacts with third party services should be recorded automatically
   # using the Rack Middleware
