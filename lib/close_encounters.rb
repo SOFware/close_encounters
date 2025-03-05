@@ -7,6 +7,23 @@ module CloseEncounters
   autoload :ParticipantService, "close_encounters/participant_service"
   autoload :ParticipantEvent, "close_encounters/participant_event"
 
+  class Configuration
+    attr_accessor :auto_contact, :verify_scan_statuses
+
+    def initialize
+      @auto_contact = !!ENV["CLOSE_ENCOUNTERS_AUTO_CONTACT"]
+      @verify_scan_statuses = [200, 201]
+    end
+  end
+
+  def self.configuration
+    @configuration ||= Configuration.new
+  end
+
+  def self.configure
+    yield(configuration)
+  end
+
   # Record a contact with a third party service if the status has changed
   #
   # @param name [String] the name of the service
@@ -45,13 +62,11 @@ module CloseEncounters
   # or call CloseEncounters.auto_contact! in an initializer
   #
   # @return [Boolean] whether or not to automatically record contacts
-  def auto_contact?
-    !!(ENV["CLOSE_ENCOUNTERS_AUTO_CONTACT"] || @auto_contact)
-  end
+  def auto_contact? = configuration.auto_contact
 
   # Enable automatic contact recording in the Rack Middleware
   def auto_contact!
-    @auto_contact = true
+    configuration.auto_contact = true
   end
 
   # Get the status of the most recent contact with a third party service
