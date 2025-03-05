@@ -7,6 +7,23 @@ module CloseEncounters
   autoload :ParticipantService, "close_encounters/participant_service"
   autoload :ParticipantEvent, "close_encounters/participant_event"
 
+  class Configuration
+    attr_accessor :auto_contact, :verify_scan_statuses
+
+    def initialize
+      @auto_contact = !!ENV["CLOSE_ENCOUNTERS_AUTO_CONTACT"]
+      @verify_scan_statuses = [200, 201]
+    end
+  end
+
+  def self.configuration
+    @configuration ||= Configuration.new
+  end
+
+  def self.configure
+    yield(configuration)
+  end
+
   # Record a contact with a third party service if the status has changed
   #
   # @param name [String] the name of the service
@@ -22,19 +39,28 @@ module CloseEncounters
   # Record a verification of a contact with a third party service where the
   # verification is a callable which must also respond to to_s.
   #
-  # For example, provide a callable which checks the JSON Schema for a response body
-  # and will record an event if calling the verification returns false.
+  # Creates a new event if:
+  # 1. The status has changed from the last recorded status
+  # 2. OR the status is in the verify_scan list AND verification fails
   #
   # @param name [String] the name of the service
   # @param status [Integer] the HTTP status of the contact
   # @param response [String] the response object
   # @param verifier [Proc] the verification callable which must also respond to to_s
-  def verify(name, status:, response:, verifier:)
+  def scan(name, status:, response:, verifier:)
     service = ParticipantService.find_by!(name:)
-    unless service.events.newest.pick(:status) == status && (verified = verifier.call(response))
+    last_status = service.events.newest.pick(:status)
+
+    if last_status != status
+      verified = verifier.call(response)
       service.events.create!(status:, response:, metadata: {verified:, verification: verifier.to_s})
+    elsif verify_scan_statuses.include?(status)
+      verified = verifier.call(response)
+      service.events.create!(status:, response:, metadata: {verified:, verification: verifier.to_s}) if !verified
     end
   end
+  alias_method :verify, :scan
+  module_function :verify
 
   # Determine if contacts with third party services should be recorded automatically
   # using the Rack Middleware
@@ -44,13 +70,19 @@ module CloseEncounters
   #
   # @return [Boolean] whether or not to automatically record contacts
   def auto_contact?
-    !!(ENV["CLOSE_ENCOUNTERS_AUTO_CONTACT"] || @auto_contact)
+    # If auto_contact is explicitly set, use that value
+    return configuration.auto_contact unless configuration.auto_contact.nil?
+    # Otherwise check the environment variable
+    !!ENV["CLOSE_ENCOUNTERS_AUTO_CONTACT"]
   end
 
   # Enable automatic contact recording in the Rack Middleware
   def auto_contact!
-    @auto_contact = true
+    configuration.auto_contact = true
   end
+
+  # Get the statuses that should be verified
+  def verify_scan_statuses = configuration.verify_scan_statuses
 
   # Get the status of the most recent contact with a third party service
   #

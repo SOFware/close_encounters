@@ -10,5 +10,9 @@ module CloseEncounters
     unless ActiveRecord::Base.connection.adapter_name.downcase.include?("postgresql")
       serialize :metadata, coder: JSON
     end
+
+    def verified?
+      !!metadata.to_h.dig("verified")
+    end
   end
 end

@@ -4,16 +4,40 @@ module CloseEncounters
   class CloseEncountersTest < ActiveSupport::TestCase
     fixtures :all
 
+    def setup
+      # Save original ENV values
+      @original_auto_contact = ENV["CLOSE_ENCOUNTERS_AUTO_CONTACT"]
+    end
+
+    def teardown
+      # Reset configuration between tests
+      CloseEncounters.remove_instance_variable(:@configuration) if CloseEncounters.instance_variable_defined?(:@configuration)
+
+      # Restore original ENV values
+      if @original_auto_contact.nil?
+        ENV.delete("CLOSE_ENCOUNTERS_AUTO_CONTACT")
+      else
+        ENV["CLOSE_ENCOUNTERS_AUTO_CONTACT"] = @original_auto_contact
+      end
+    end
+
+    test ".configure sets the configuration" do
+      CloseEncounters.configure do |config|
+        config.auto_contact = true
+        config.verify_scan_statuses = [1, 999]
+      end
+
+      _(CloseEncounters.configuration.auto_contact).must_equal true
+    end
+
     test ".auto_contact? returns true if the environment variable is set" do
       ENV["CLOSE_ENCOUNTERS_AUTO_CONTACT"] = "true"
       _(CloseEncounters.auto_contact?).must_equal true
-    ensure
-      ENV.delete("CLOSE_ENCOUNTERS_AUTO_CONTACT")
     end
 
     test ".auto_contact? returns false if the environment variable is not set" do
       ENV.delete("CLOSE_ENCOUNTERS_AUTO_CONTACT")
-      CloseEncounters.remove_instance_variable(:@auto_contact) if CloseEncounters.instance_variable_defined?(:@auto_contact)
+      CloseEncounters.remove_instance_variable(:@configuration) if CloseEncounters.instance_variable_defined?(:@configuration)
       _(CloseEncounters.auto_contact?).must_equal false
     end
 
@@ -55,10 +79,16 @@ module CloseEncounters
       end
     end
 
-    test ".verify creates a new event if the status and verification are met" do
+    test ".scan creates a new event if the status and verification are met" do
       service = close_encounters_participant_services(:aliens)
-      CloseEncounters.verify("aliens", status: 200, response: "Yay! Everything worked.", verifier: Verification.new)
-      CloseEncounters.verify("aliens", status: 200, response: "Nope! Everything failed.", verifier: Verification.new)
+      CloseEncounters.scan("aliens", status: 200, response: "Yay! Everything worked.", verifier: Verification.new)
+      CloseEncounters.scan("aliens", status: 200, response: "Nope! Everything failed.", verifier: Verification.new)
+      _(service.events.count).must_equal 2
+    end
+
+    test ".scan creates a new event if the status is in the verify_scan_statuses list and verification fails" do
+      service = close_encounters_participant_services(:aliens)
+      CloseEncounters.scan("aliens", status: 200, response: "Nope! Everything failed.", verifier: Verification.new)
       _(service.events.count).must_equal 2
     end
 
