@@ -22,5 +22,19 @@ module CloseEncounters
       event = service.events.create!(status: 200, response: "OK", metadata: {foo: "bar"})
       assert_equal({"foo" => "bar"}, event.metadata)
     end
+
+    it "can check if an event is verified" do
+      service = ParticipantService.create!(name: "test")
+      event = service.events.build(status: 200, response: "OK", metadata: {verified: true})
+      assert event.verified?
+      event.metadata = {verified: false}
+      refute event.verified?
+    end
+
+    it "is not verified if the metadata is not present" do
+      service = ParticipantService.create!(name: "test")
+      event = service.events.build(status: 200, response: "OK")
+      refute event.verified?
+    end
   end
 end
