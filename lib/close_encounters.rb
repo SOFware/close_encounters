@@ -31,6 +31,7 @@ module CloseEncounters
   # @param response [String] the response object
   def contact(name, status:, response:)
     service = ParticipantService.find_by!(name:)
+    status = status.to_i # Ensure status is always an integer
 
     # Use a transaction with a lock to prevent race conditions
     service.with_lock do
@@ -53,6 +54,7 @@ module CloseEncounters
   # @param verifier [Proc] the verification callable which must also respond to to_s
   def scan(name, status:, response:, verifier:)
     service = ParticipantService.find_by!(name:)
+    status = status.to_i # Ensure status is always an integer
 
     service.with_lock do
       if service.events.newest.pick(:status) != status
