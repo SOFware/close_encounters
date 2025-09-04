@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.2.2] - Unreleased
 
+### Changed
+
+- Update handling of the same status for multiple requests when creating events.
+
+### Fixed
+
+- Ensure that status is an integer when creating events and comparing results.
+
 ## [0.2.1] - 2025-03-05
 
 ### Added

@@ -31,8 +31,13 @@ module CloseEncounters
   # @param response [String] the response object
   def contact(name, status:, response:)
     service = ParticipantService.find_by!(name:)
-    unless service.events.newest.pick(:status) == status
-      service.events.create!(status: status, response:)
+    status = status.to_i # Ensure status is always an integer
+
+    # Use a transaction with a lock to prevent race conditions
+    service.with_lock do
+      unless service.events.newest.pick(:status) == status
+        service.events.create!(status: status, response:)
+      end
     end
   end
 
@@ -49,14 +54,16 @@ module CloseEncounters
   # @param verifier [Proc] the verification callable which must also respond to to_s
   def scan(name, status:, response:, verifier:)
     service = ParticipantService.find_by!(name:)
-    last_status = service.events.newest.pick(:status)
+    status = status.to_i # Ensure status is always an integer
 
-    if last_status != status
-      verified = verifier.call(response)
-      service.events.create!(status:, response:, metadata: {verified:, verification: verifier.to_s})
-    elsif verify_scan_statuses.include?(status)
-      verified = verifier.call(response)
-      service.events.create!(status:, response:, metadata: {verified:, verification: verifier.to_s}) if !verified
+    service.with_lock do
+      if service.events.newest.pick(:status) != status
+        verified = verifier.call(response)
+        service.events.create!(status:, response:, metadata: {verified:, verification: verifier.to_s})
+      elsif verify_scan_statuses.include?(status)
+        verified = verifier.call(response)
+        service.events.create!(status:, response:, metadata: {verified:, verification: verifier.to_s}) if !verified
+      end
     end
   end
   alias_method :verify, :scan
