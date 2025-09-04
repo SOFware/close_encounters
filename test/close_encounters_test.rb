@@ -39,6 +39,8 @@ module CloseEncounters
       ENV.delete("CLOSE_ENCOUNTERS_AUTO_CONTACT")
       CloseEncounters.remove_instance_variable(:@configuration) if CloseEncounters.instance_variable_defined?(:@configuration)
       _(CloseEncounters.auto_contact?).must_equal false
+    ensure
+      ENV.delete("CLOSE_ENCOUNTERS_AUTO_CONTACT")
     end
 
     test ".auto_contact! enables automatic contact recording" do
