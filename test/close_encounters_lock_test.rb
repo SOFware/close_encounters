@@ -2,31 +2,33 @@ require "test_helper"
 
 module CloseEncounters
   class CloseEncountersLockTest < ActiveSupport::TestCase
-    test ".scan with lock prevents duplicate events when status hasn't changed" do
+    test ".scan with lock prevents duplicate events from multiple rapid calls" do
       service = ParticipantService.create!(name: "scan_lock_test")
-      service.events.create!(status: 200, response: "Initial")
+      service.events.create!(status: 200, response: "Initial", metadata: {verified: false})
 
-      verifier = ->(response) { true }
-      verifier.define_singleton_method(:to_s) { "always true verifier" }
+      failing_verifier = ->(response) { false }
+      failing_verifier.define_singleton_method(:to_s) { "always false verifier" }
 
-      # Multiple rapid calls with same status should only keep the original event
+      # Multiple rapid calls with same status and same verification result should not create duplicates
+      # This specifically tests the lock mechanism
       3.times do
-        CloseEncounters.scan("scan_lock_test", status: 200, response: "Same status", verifier: verifier)
+        CloseEncounters.scan("scan_lock_test", status: 200, response: "Same status", verifier: failing_verifier)
       end
 
-      # Should still only have 1 event since status didn't change and verification passed
+      # Should still only have 1 event since neither status nor verified changed
       assert_equal 1, service.events.count
     end
 
-    test ".scan with lock creates event when verification fails for verify_scan_statuses" do
+    test ".scan with lock creates event when verification changes" do
       service = ParticipantService.create!(name: "scan_verify_fail")
-      service.events.create!(status: 200, response: "Initial good")
+      # Initial event with verified: true
+      service.events.create!(status: 200, response: "Initial good", metadata: {verified: true})
 
       failing_verifier = ->(response) { false }
       failing_verifier.define_singleton_method(:to_s) { "always fails verifier" }
 
       # Status 200 is in verify_scan_statuses by default
-      # When verification fails, it should create a new event even with same status
+      # When verification changes from true to false, it should create a new event
       CloseEncounters.scan("scan_verify_fail", status: 200, response: "Bad response", verifier: failing_verifier)
 
       assert_equal 2, service.events.count

@@ -40,30 +40,30 @@ module CloseEncounters
       failing_verifier = ->(response) { false }
       failing_verifier.define_singleton_method(:to_s) { "always fails" }
 
-      # First call creates event
+      # First call creates event with verified: false
       CloseEncounters.scan("string_scan_fail_test", status: "200", response: "First", verifier: failing_verifier)
       assert_equal 1, service.events.count
 
-      # Second call with string status and failing verification should create new event
-      # because 200 is in verify_scan_statuses and verification fails
+      # Second call with same status and same verification should NOT create new event
       CloseEncounters.scan("string_scan_fail_test", status: "200", response: "Second", verifier: failing_verifier)
-      assert_equal 2, service.events.count, "Should create new event when verification fails"
+      assert_equal 1, service.events.count, "Should not create duplicate event when status and verified are same"
     end
 
     test "verify_scan_statuses works with string status" do
       service = ParticipantService.create!(name: "verify_statuses_test")
 
-      # Create initial event
+      # Create initial event with verified: false (no metadata)
       service.events.create!(status: 200, response: "Initial")
 
       failing_verifier = ->(response) { false }
       failing_verifier.define_singleton_method(:to_s) { "always fails" }
 
       # String "200" should be converted to 200 and match verify_scan_statuses
+      # But since both status and verified are same, no new event
       CloseEncounters.scan("verify_statuses_test", status: "200", response: "Test", verifier: failing_verifier)
 
-      # Should create new event because status 200 is in verify_scan_statuses and verification fails
-      assert_equal 2, service.events.count
+      # Should NOT create new event because both status and verified are unchanged
+      assert_equal 1, service.events.count
     end
 
     test "production scenario fixed" do
@@ -73,14 +73,14 @@ module CloseEncounters
       failing_verifier.define_singleton_method(:to_s) { "production verifier" }
 
       # Simulate production where status might come as string
-      # First call
+      # First call creates event with status: 200, verified: false
       CloseEncounters.scan("production_fixed", status: "200", response: "Response 1", verifier: failing_verifier)
       assert_equal 1, service.events.count
 
-      # Subsequent calls with string "200" and failing verification
-      # Should create new events because verification fails (intended behavior)
+      # Subsequent calls with same status and same verification should NOT create duplicates
+      # This is the fix for the production issue
       CloseEncounters.scan("production_fixed", status: "200", response: "Response 2", verifier: failing_verifier)
-      assert_equal 2, service.events.count
+      assert_equal 1, service.events.count
 
       # But if we use contact instead (no verification)
       service2 = ParticipantService.create!(name: "production_contact")

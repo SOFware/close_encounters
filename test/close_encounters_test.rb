@@ -83,15 +83,93 @@ module CloseEncounters
 
     test ".scan creates a new event if the status and verification are met" do
       service = close_encounters_participant_services(:aliens)
+      # The fixture already has 1 event with status 200 and no metadata (verified = false)
+      # First scan: status=200, verified=true -> creates new event (verified changed from false to true)
+      # Second scan: status=200, verified=false -> creates new event (verified changed from true to false)
+      # Total: 1 (fixture) + 2 (new) = 3 events
       CloseEncounters.scan("aliens", status: 200, response: "Yay! Everything worked.", verifier: Verification.new)
       CloseEncounters.scan("aliens", status: 200, response: "Nope! Everything failed.", verifier: Verification.new)
-      _(service.events.count).must_equal 2
+      _(service.events.count).must_equal 3
     end
 
     test ".scan creates a new event if the status is in the verify_scan_statuses list and verification fails" do
       service = close_encounters_participant_services(:aliens)
+      # The fixture already has 1 event with status 200 and no metadata (verified = false)
+      # Scan with status=200, verified=false -> no new event (both status and verified are same)
       CloseEncounters.scan("aliens", status: 200, response: "Nope! Everything failed.", verifier: Verification.new)
-      _(service.events.count).must_equal 2
+      _(service.events.count).must_equal 1
+    end
+
+    test ".scan does not create duplicate events when status and verification are unchanged" do
+      service = ParticipantService.create!(name: "duplicate_test")
+
+      failing_verifier = ->(response) { false }
+      failing_verifier.define_singleton_method(:to_s) { "always fails" }
+
+      # First call creates event with status 200 and verified: false
+      CloseEncounters.scan("duplicate_test", status: 200, response: "Failed", verifier: failing_verifier)
+      assert_equal 1, service.events.count
+      first_event = service.events.last
+      assert_equal 200, first_event.status
+      assert_equal false, first_event.verified?
+
+      # Second call with same status and same verification result should NOT create new event
+      CloseEncounters.scan("duplicate_test", status: 200, response: "Still Failed", verifier: failing_verifier)
+      assert_equal 1, service.events.count, "Should not create duplicate event when status and verified are same"
+    end
+
+    test ".scan creates new event when verification changes from false to true" do
+      service = ParticipantService.create!(name: "verification_change_test")
+
+      failing_verifier = ->(response) { false }
+      failing_verifier.define_singleton_method(:to_s) { "always fails" }
+
+      passing_verifier = ->(response) { true }
+      passing_verifier.define_singleton_method(:to_s) { "always passes" }
+
+      # First call creates event with status 200 and verified: false
+      CloseEncounters.scan("verification_change_test", status: 200, response: "Failed", verifier: failing_verifier)
+      assert_equal 1, service.events.count
+      first_event = service.events.last
+      assert_equal false, first_event.verified?
+
+      # Second call with same status but different verification should create new event
+      CloseEncounters.scan("verification_change_test", status: 200, response: "Now Passing", verifier: passing_verifier)
+      assert_equal 2, service.events.count, "Should create new event when verification changes"
+      second_event = service.events.last
+      assert_equal true, second_event.verified?
+    end
+
+    test ".scan correctly handles production scenario with 200 responses" do
+      service = ParticipantService.create!(name: "production_scenario")
+
+      failing_verifier = ->(response) { false }
+      failing_verifier.define_singleton_method(:to_s) { "production verifier" }
+
+      passing_verifier = ->(response) { true }
+      passing_verifier.define_singleton_method(:to_s) { "production verifier" }
+
+      # Scenario 1: Multiple 200 unverified responses should not create duplicates
+      CloseEncounters.scan("production_scenario", status: 200, response: "Unverified 1", verifier: failing_verifier)
+      assert_equal 1, service.events.count
+
+      CloseEncounters.scan("production_scenario", status: 200, response: "Unverified 2", verifier: failing_verifier)
+      assert_equal 1, service.events.count, "Should not record duplicate 200 unverified"
+
+      CloseEncounters.scan("production_scenario", status: 200, response: "Unverified 3", verifier: failing_verifier)
+      assert_equal 1, service.events.count, "Should not record duplicate 200 unverified"
+
+      # Scenario 2: 200 verified should create new event
+      CloseEncounters.scan("production_scenario", status: 200, response: "Verified", verifier: passing_verifier)
+      assert_equal 2, service.events.count, "Should record new event when verification changes to true"
+
+      # Scenario 3: Multiple 200 verified responses should not create duplicates
+      CloseEncounters.scan("production_scenario", status: 200, response: "Verified 2", verifier: passing_verifier)
+      assert_equal 2, service.events.count, "Should not record duplicate 200 verified"
+
+      # Scenario 4: Back to unverified should create new event
+      CloseEncounters.scan("production_scenario", status: 200, response: "Unverified again", verifier: failing_verifier)
+      assert_equal 3, service.events.count, "Should record new event when verification changes back to false"
     end
 
     test ".status returns the status of the most recent event" do

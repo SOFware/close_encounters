@@ -57,12 +57,22 @@ module CloseEncounters
     status = status.to_i # Ensure status is always an integer
 
     service.with_lock do
-      if service.events.newest.pick(:status) != status
-        verified = verifier.call(response)
+      last_event = service.events.newest.first
+      last_status = last_event&.status
+      last_verified = last_event&.verified?
+
+      # Calculate current verification result
+      verified = verifier.call(response)
+
+      # Create a new event if:
+      # 1. Status has changed OR
+      # 2. Status is in verify_scan_statuses AND verified flag has changed
+      if last_status != status
+        # Status changed, always create new event
         service.events.create!(status:, response:, metadata: {verified:, verification: verifier.to_s})
-      elsif verify_scan_statuses.include?(status)
-        verified = verifier.call(response)
-        service.events.create!(status:, response:, metadata: {verified:, verification: verifier.to_s}) if !verified
+      elsif verify_scan_statuses.include?(status) && last_verified != verified
+        # Status same but verification result changed for a monitored status
+        service.events.create!(status:, response:, metadata: {verified:, verification: verifier.to_s})
       end
     end
   end

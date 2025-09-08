@@ -1,11 +1,12 @@
 # Configure Rails Environment
 ENV["RAILS_ENV"] = "test"
 
-if ENV["CI"]
-  require "simplecov"
-end
+require "simplecov"
 
 require_relative "../test/dummy/config/environment"
+
+# Load the gem's library files after SimpleCov is started and Rails is loaded
+require "close_encounters"
 
 ActiveRecord::Migrator.migrations_paths = [File.expand_path("../test/dummy/db/migrate", __dir__)]
 ActiveRecord::Migrator.migrations_paths << File.expand_path("../db/migrate", __dir__)
