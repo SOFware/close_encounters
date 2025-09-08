@@ -57,7 +57,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Download base branch coverage
-        uses: dawidd6/action-download-artifact@v6
+        uses: dawidd6/action-download-artifact@v11
         with:
           workflow: test.yml
           branch: ${{ github.event.pull_request.base.ref }}
