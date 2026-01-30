@@ -20,6 +20,7 @@ require "reissue/gem"
 
 Reissue::Task.create :reissue do |task|
   task.version_file = "lib/close_encounters/version.rb"
+  task.push_finalize = :branch
 end
 
 require "standard/rake"
