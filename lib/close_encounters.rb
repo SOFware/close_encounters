@@ -41,17 +41,30 @@ module CloseEncounters
     end
   end
 
+  VERIFIED_SIGNATURE = "ok"
+  UNVERIFIED_SIGNATURE = "unverified"
+
   # Record a verification of a contact with a third party service where the
   # verification is a callable which must also respond to to_s.
   #
+  # The verifier may return:
+  #   * true / :ok           — response is verified
+  #   * false / nil          — response failed verification (generic)
+  #   * any other value      — failed verification with a distinguishing
+  #                            "signature" (e.g. "missing:user.email").
+  #                            Stable signatures let scan suppress repeated
+  #                            identical failures while still recording when
+  #                            the failure mode changes meaningfully.
+  #
   # Creates a new event if:
-  # 1. The status has changed from the last recorded status
-  # 2. OR the status is in the verify_scan list AND verification fails
+  # 1. The status has changed from the last recorded status, OR
+  # 2. The status is in the verify_scan list AND the verification signature
+  #    differs from the last recorded signature.
   #
   # @param name [String] the name of the service
   # @param status [Integer] the HTTP status of the contact
   # @param response [String] the response object
-  # @param verifier [Proc] the verification callable which must also respond to to_s
+  # @param verifier [#call, #to_s] the verification callable
   def scan(name, status:, response:, verifier:)
     service = ParticipantService.find_by!(name:)
     status = status.to_i # Ensure status is always an integer
@@ -59,22 +72,37 @@ module CloseEncounters
     service.with_lock do
       last_event = service.events.newest.first
       last_status = last_event&.status
-      last_verified = last_event&.verified?
 
-      # Calculate current verification result
-      verified = verifier.call(response)
+      signature = signature_for(verifier.call(response))
+      verified = (signature == VERIFIED_SIGNATURE)
+      last_signature = signature_for_event(last_event)
 
-      # Create a new event if:
-      # 1. Status has changed OR
-      # 2. Status is in verify_scan_statuses AND verified flag has changed
+      metadata = {verified:, signature:, verification: verifier.to_s}
+
       if last_status != status
-        # Status changed, always create new event
-        service.events.create!(status:, response:, metadata: {verified:, verification: verifier.to_s})
-      elsif verify_scan_statuses.include?(status) && last_verified != verified
-        # Status same but verification result changed for a monitored status
-        service.events.create!(status:, response:, metadata: {verified:, verification: verifier.to_s})
+        service.events.create!(status:, response:, metadata:)
+      elsif verify_scan_statuses.include?(status) && last_signature != signature
+        service.events.create!(status:, response:, metadata:)
       end
     end
+  end
+
+  # Normalize a verifier return value into a stable signature string.
+  def signature_for(result)
+    case result
+    when true, :ok then VERIFIED_SIGNATURE
+    when false, nil then UNVERIFIED_SIGNATURE
+    else result.to_s
+    end
+  end
+
+  # Read the signature off a previously stored event, falling back to the
+  # legacy verified flag for events created before signatures existed.
+  def signature_for_event(event)
+    return nil unless event
+    stored = event.metadata.to_h["signature"]
+    return stored if stored
+    event.verified? ? VERIFIED_SIGNATURE : UNVERIFIED_SIGNATURE
   end
   alias_method :verify, :scan
   module_function :verify
