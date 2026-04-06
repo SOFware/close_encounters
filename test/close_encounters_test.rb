@@ -172,6 +172,33 @@ module CloseEncounters
       assert_equal 3, service.events.count, "Should record new event when verification changes back to false"
     end
 
+    test ".scan distinguishes between distinct failure signatures on same status" do
+      service = ParticipantService.create!(name: "shape_change_test")
+
+      shape_a_verifier = ->(response) { (response == "good") ? :ok : "missing:user.email" }
+      shape_a_verifier.define_singleton_method(:to_s) { "shape verifier" }
+
+      shape_b_verifier = ->(response) { (response == "good") ? :ok : "missing:user.id" }
+      shape_b_verifier.define_singleton_method(:to_s) { "shape verifier" }
+
+      CloseEncounters.scan("shape_change_test", status: 200, response: "bad1", verifier: shape_a_verifier)
+      assert_equal 1, service.events.count
+
+      CloseEncounters.scan("shape_change_test", status: 200, response: "bad1 again", verifier: shape_a_verifier)
+      assert_equal 1, service.events.count, "same failure signature should not duplicate"
+
+      CloseEncounters.scan("shape_change_test", status: 200, response: "bad2", verifier: shape_b_verifier)
+      assert_equal 2, service.events.count, "different failure signature should create a new event"
+
+      CloseEncounters.scan("shape_change_test", status: 200, response: "bad2 again", verifier: shape_b_verifier)
+      assert_equal 2, service.events.count, "same failure signature should not duplicate"
+
+      passing = ->(response) { :ok }
+      passing.define_singleton_method(:to_s) { "shape verifier" }
+      CloseEncounters.scan("shape_change_test", status: 200, response: "good", verifier: passing)
+      assert_equal 3, service.events.count, "transition to verified should record"
+    end
+
     test ".status returns the status of the most recent event" do
       service = close_encounters_participant_services(:aliens)
       service.events.create!(status: 200, response: "Yay! Everything worked.")
