@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_02_25_232551) do
+ActiveRecord::Schema[8.0].define(version: 2026_07_24_000001) do
   create_table "close_encounters_participant_events", force: :cascade do |t|
     t.text "response"
     t.integer "close_encounters_participant_service_id", null: false
@@ -18,6 +18,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_25_232551) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.text "metadata"
+    t.index ["close_encounters_participant_service_id", "created_at"], name: "idx_ce_events_on_service_and_created_at"
     t.index ["close_encounters_participant_service_id"], name: "idx_on_close_encounters_participant_service_id_4e69f5fd33"
   end
 

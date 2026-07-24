@@ -17,6 +17,24 @@ module CloseEncounters
       assert_equal event2, ParticipantEvent.newest.first
     end
 
+    it "returns the last-inserted event when timestamps tie" do
+      service = ParticipantService.create!(name: "tie")
+      frozen = Time.current.change(usec: 0)
+      older = service.events.create!(status: 200, response: "first", created_at: frozen, updated_at: frozen)
+      newer = service.events.create!(status: 500, response: "second", created_at: frozen, updated_at: frozen)
+
+      assert newer.id > older.id, "expected the second insert to have the larger id"
+      assert_equal newer, service.events.newest.first
+    end
+
+    it "has a composite index supporting the newest-event lookup" do
+      index = ActiveRecord::Base.connection
+        .indexes("close_encounters_participant_events")
+        .find { |i| i.columns == ["close_encounters_participant_service_id", "created_at"] }
+
+      assert index, "expected a composite index on (service_id, created_at) for the newest-event query"
+    end
+
     it "can store metadata" do
       service = ParticipantService.create!(name: "test")
       event = service.events.create!(status: 200, response: "OK", metadata: {foo: "bar"})
