@@ -71,6 +71,47 @@ module CloseEncounters
       expect { CloseEncounters.contact("service", status: 200, response: "Yay! Everything worked.") }.must_raise ActiveRecord::RecordNotFound
     end
 
+    def capture_notifications(name, &block)
+      payloads = []
+      subscriber = ActiveSupport::Notifications.subscribe(name) do |*args|
+        payloads << ActiveSupport::Notifications::Event.new(*args).payload
+      end
+      block.call
+      payloads
+    ensure
+      ActiveSupport::Notifications.unsubscribe(subscriber)
+    end
+
+    test ".contact publishes a notification when an event is recorded" do
+      payloads = capture_notifications("event_recorded.close_encounters") do
+        CloseEncounters.contact("aliens", status: 500, response: "Oops! Nothing worked.")
+      end
+
+      _(payloads.size).must_equal 1
+      _(payloads.first[:name]).must_equal "aliens"
+      _(payloads.first[:status]).must_equal 500
+      _(payloads.first[:event].status).must_equal 500
+    end
+
+    test ".contact does not publish a notification when nothing is recorded" do
+      payloads = capture_notifications("event_recorded.close_encounters") do
+        # "others" already has a 500 event, so no new event is recorded.
+        CloseEncounters.contact("others", status: 500, response: "Failed again.")
+      end
+
+      _(payloads).must_be_empty
+    end
+
+    test ".scan publishes a notification when an event is recorded" do
+      payloads = capture_notifications("event_recorded.close_encounters") do
+        CloseEncounters.scan("aliens", status: 200, response: "Yay! Everything worked.", verifier: Verification.new)
+      end
+
+      _(payloads.size).must_equal 1
+      _(payloads.first[:name]).must_equal "aliens"
+      _(payloads.first[:event].verified?).must_equal true
+    end
+
     class Verification
       def call(response)
         response == "Yay! Everything worked."

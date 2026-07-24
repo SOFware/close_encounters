@@ -44,6 +44,21 @@ Alternatively, you can use the `auto_contact!` method to automatically turn on t
 CloseEncounters.auto_contact!
 ```
 
+### Reacting to status changes
+
+Rather than polling `CloseEncounters.status`, you can subscribe to be notified
+whenever a new event is recorded (by either `contact` or `scan`). A
+notification is only published when an event is actually created — i.e. when
+the status or verification signature changes.
+
+```ruby
+ActiveSupport::Notifications.subscribe("event_recorded.close_encounters") do |*args|
+  payload = ActiveSupport::Notifications::Event.new(*args).payload
+  # payload => { name:, service:, event:, status: }
+  AlertMailer.status_changed(payload[:name], payload[:status]).deliver_later
+end
+```
+
 ### TODO
 
 - [ ] Add JS to the gem to track events on the front-end.
