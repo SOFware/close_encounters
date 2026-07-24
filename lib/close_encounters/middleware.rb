@@ -19,13 +19,20 @@ module CloseEncounters
       if (name = participant_services[host])
         @tracker.contact(name, status:, response:)
       end
+    rescue => e
+      # Tracking must never break the request it is observing.
+      Rails.logger&.error("[CloseEncounters] middleware tracking failed: #{e.class}: #{e.message}")
+      nil
     end
 
+    # Built per request rather than memoized: the middleware is instantiated
+    # once per process, so caching here would never reflect services added or
+    # changed after boot.
     def participant_services
-      @participant_services ||= CloseEncounters::ParticipantService.all
-        .map do |service|
-          [service.connection_info["domain"], service.name]
-        end.to_h
+      CloseEncounters::ParticipantService.all.each_with_object({}) do |service, map|
+        domain = service.connection_info&.[]("domain")
+        map[domain] = service.name if domain
+      end
     end
   end
 end
