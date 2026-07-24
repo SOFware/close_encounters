@@ -63,8 +63,8 @@ module CloseEncounters
   # #body(response); CloseEncounters::Adapters::NetHTTP ships for Net::HTTP.
   # Delegates to #scan when a verifier is given, otherwise #contact.
   #
-  #   CloseEncounters.record("LRS", response, adapter: Adapters::NetHTTP)
-  #   CloseEncounters.record("LRS", response, adapter: Adapters::NetHTTP, verifier: Validator)
+  #   CloseEncounters.record("SomeService", response, adapter: Adapters::NetHTTP)
+  #   CloseEncounters.record("SomeService", response, adapter: Adapters::NetHTTP, verifier: my_verifier)
   #
   # @param name [String] the name of the service
   # @param response [Object] the HTTP client's response object

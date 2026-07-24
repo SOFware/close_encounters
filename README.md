@@ -41,7 +41,7 @@ CloseEncounters.record("SomeThirdPartyService", response, adapter: CloseEncounte
 Pass a `verifier` to record a verified scan instead of a plain contact:
 
 ```ruby
-CloseEncounters.record("LRS", response, adapter: CloseEncounters::Adapters::NetHTTP, verifier: Validator)
+CloseEncounters.record("SomeService", response, adapter: CloseEncounters::Adapters::NetHTTP, verifier: my_verifier)
 ```
 
 An adapter is any object that responds to `status(response)` and
