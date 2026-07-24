@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        version: ["3.4"]
+        version: ["3.4", "4.0.6"]
     env:
       NOTIFY_SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       NOTIFY_SLACK_NOTIFY_CHANNEL: "oss-notices"
@@ -83,7 +83,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        version: ["3.4"]
+        version: ["4.0.6"]
     steps:
       - uses: actions/checkout@v7
       - uses: ruby/setup-ruby@v1
