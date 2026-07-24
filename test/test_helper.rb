@@ -2,6 +2,20 @@
 ENV["RAILS_ENV"] = "test"
 
 require "simplecov"
+SimpleCov.start "rails" do
+  # Use simple formatter in CI for cleaner output
+  formatter SimpleCov::Formatter::SimpleFormatter if ENV["CI"] == "true"
+
+  skip "version.rb"
+  skip "/test/"
+  skip "lib/tasks"
+
+  # Track all files in lib and app
+  cover "{app,lib}/**/*.rb"
+
+  # Enable branch coverage
+  enable_coverage :branch
+end
 
 require_relative "../test/dummy/config/environment"
 
