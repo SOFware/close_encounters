@@ -7,6 +7,10 @@ module CloseEncounters
       g.test_framework :minitest, spec: true
     end
 
+    initializer "close_encounters.deprecator" do |app|
+      app.deprecators[:close_encounters] = CloseEncounters.deprecator if app.respond_to?(:deprecators)
+    end
+
     initializer "close_encounters.middleware" do |app|
       app.middleware.use CloseEncounters::Middleware if CloseEncounters.auto_contact?
     end
