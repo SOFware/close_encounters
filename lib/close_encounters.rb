@@ -33,13 +33,34 @@ module CloseEncounters
     service = ParticipantService.find_by!(name:)
     status = status.to_i # Ensure status is always an integer
 
+    created = nil
     # Use a transaction with a lock to prevent race conditions
     service.with_lock do
       unless service.events.newest.pick(:status) == status
-        service.events.create!(status: status, response:)
+        created = service.events.create!(status: status, response:)
       end
     end
+
+    # Instrument after the transaction commits so subscribers see a persisted event.
+    instrument(name, created) if created
+    created
   end
+
+  # Publish an ActiveSupport::Notifications event whenever a new
+  # ParticipantEvent is recorded, so consumers can react to status changes
+  # instead of polling. Subscribe with:
+  #
+  #   ActiveSupport::Notifications.subscribe("event_recorded.close_encounters") do |*args|
+  #     payload = ActiveSupport::Notifications::Event.new(*args).payload
+  #     # payload => { name:, service:, event:, status: }
+  #   end
+  def instrument(name, event)
+    ActiveSupport::Notifications.instrument(
+      "event_recorded.close_encounters",
+      name:, service: event.participant_service, event:, status: event.status
+    )
+  end
+  private_class_method :instrument
 
   VERIFIED_SIGNATURE = "ok"
   UNVERIFIED_SIGNATURE = "unverified"
@@ -69,6 +90,7 @@ module CloseEncounters
     service = ParticipantService.find_by!(name:)
     status = status.to_i # Ensure status is always an integer
 
+    created = nil
     service.with_lock do
       last_event = service.events.newest.first
       last_status = last_event&.status
@@ -80,11 +102,14 @@ module CloseEncounters
       metadata = {verified:, signature:, verification: verifier.to_s}
 
       if last_status != status
-        service.events.create!(status:, response:, metadata:)
+        created = service.events.create!(status:, response:, metadata:)
       elsif verify_scan_statuses.include?(status) && last_signature != signature
-        service.events.create!(status:, response:, metadata:)
+        created = service.events.create!(status:, response:, metadata:)
       end
     end
+
+    instrument(name, created) if created
+    created
   end
 
   # Normalize a verifier return value into a stable signature string.
