@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.3.1] - Unreleased
+
 ## [0.3.0] - 2026-07-24
 
 ### Added
@@ -26,5 +28,3 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - The tracking middleware no longer breaks the request it observes, rebuilds its service map each request, and ignores services without a domain (83ed88c)
 - The newest-event lookup is now deterministic on timestamp ties and backed by a composite index (e94afe5)
-
-## [0.2.4] - 2026-04-06
