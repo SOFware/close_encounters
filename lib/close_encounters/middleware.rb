@@ -1,6 +1,12 @@
 module CloseEncounters
   class Middleware
     def initialize(app, tracker: CloseEncounters)
+      CloseEncounters.deprecator.warn(
+        "CloseEncounters::Middleware tracks inbound requests by host, not the " \
+        "outbound responses this gem is meant to monitor. Track a service's " \
+        "response with CloseEncounters.record(name, response, adapter:) instead. " \
+        "The middleware will be removed in a future release."
+      )
       @app = app
       @tracker = tracker
     end

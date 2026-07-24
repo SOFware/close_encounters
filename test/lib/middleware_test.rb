@@ -71,5 +71,20 @@ module CloseEncounters
 
       assert_equal ["aliens"], calls
     end
+
+    test "instantiating the middleware emits a deprecation warning pointing to record" do
+      messages = []
+      original = CloseEncounters.deprecator.behavior
+      CloseEncounters.deprecator.behavior = ->(message, *) { messages << message }
+
+      CloseEncounters::Middleware.new(@app)
+
+      assert(
+        messages.any? { |m| m.match?(/deprecat/i) && m.match?(/record/) },
+        "expected a deprecation warning mentioning record, got: #{messages.inspect}"
+      )
+    ensure
+      CloseEncounters.deprecator.behavior = original
+    end
   end
 end

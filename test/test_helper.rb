@@ -22,6 +22,10 @@ require_relative "../test/dummy/config/environment"
 # Load the gem's library files after SimpleCov is started and Rails is loaded
 require "close_encounters"
 
+# Keep deprecation warnings out of test output; tests that assert on them set
+# their own behavior locally.
+CloseEncounters.deprecator.behavior = :silence
+
 ActiveRecord::Migrator.migrations_paths = [File.expand_path("../test/dummy/db/migrate", __dir__)]
 ActiveRecord::Migrator.migrations_paths << File.expand_path("../db/migrate", __dir__)
 

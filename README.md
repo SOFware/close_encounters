@@ -15,34 +15,55 @@ Then when you have it installed and migrated you can start tracking events.
 
 ```ruby
 response = SomeThirdPartyService.call
-CloseEncounters.contact("SomeThirdPartyService", status: response.status.to_i, response.body)
+CloseEncounters.contact("SomeThirdPartyService", status: response.status.to_i, response: response.body)
 ```
 
-If the services regularly returns 200 responses, no new events will be recorded.
+If the service regularly returns 200 responses, no new events will be recorded.
 When it switches to a different status, a new event will be recorded.
 
 ```ruby
 CloseEncounters.status("SomeThirdPartyService") # => 200
-# evuntually you use `contact` and it records a 500 and you'll be able to get
+# eventually you use `contact` and it records a 500 and you'll be able to get
 CloseEncounters.status("SomeThirdPartyService") # => 500
 ```
 
-### Rack Middleware
+### Recording a response from any HTTP client
 
-Setup your middleware in your `config/application.rb` or `config/environments/production.rb`.
-
-```ruby
-config.middleware.use CloseEncounters::Middleware
-```
-
-This will automatically track responses from third-party services when you store a "domain" key in the
-`connection_info` in the ParticipantService records.
-
-Alternatively, you can use the `auto_contact!` method to automatically turn on the rack middleware:
+`CloseEncounters.record` records a contact straight from an HTTP client's
+response object, using an *adapter* to read the status and body. This keeps the
+gem independent of any particular HTTP library.
 
 ```ruby
-CloseEncounters.auto_contact!
+response = SomeThirdPartyService.call # a Net::HTTP response
+CloseEncounters.record("SomeThirdPartyService", response, adapter: CloseEncounters::Adapters::NetHTTP)
 ```
+
+Pass a `verifier` to record a verified scan instead of a plain contact:
+
+```ruby
+CloseEncounters.record("LRS", response, adapter: CloseEncounters::Adapters::NetHTTP, verifier: Validator)
+```
+
+An adapter is any object that responds to `status(response)` and
+`body(response)`, so supporting another client is a few lines:
+
+```ruby
+module FaradayAdapter
+  module_function
+  def status(response) = response.status
+  def body(response) = response.body
+end
+
+CloseEncounters.record("SomeApi", faraday_response, adapter: FaradayAdapter)
+```
+
+### Rack Middleware (deprecated)
+
+> **Deprecated.** `CloseEncounters::Middleware` keys on the *inbound* request
+> host (`SERVER_NAME`), so it tracks requests arriving at your app rather than
+> the outbound responses this gem is meant to monitor. Track responses with
+> `CloseEncounters.record` (above) instead. The middleware will be removed in a
+> future release.
 
 ### Reacting to status changes
 

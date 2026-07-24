@@ -7,6 +7,10 @@ module CloseEncounters
   autoload :ParticipantService, "close_encounters/participant_service"
   autoload :ParticipantEvent, "close_encounters/participant_event"
 
+  module Adapters
+    autoload :NetHTTP, "close_encounters/adapters/net_http"
+  end
+
   class Configuration
     attr_accessor :auto_contact, :verify_scan_statuses
 
@@ -18,6 +22,12 @@ module CloseEncounters
 
   def self.configuration
     @configuration ||= Configuration.new
+  end
+
+  # Deprecator for CloseEncounters. Registered with the host app in the engine
+  # so warnings flow through the app's configured deprecation behavior.
+  def self.deprecator
+    @deprecator ||= ActiveSupport::Deprecation.new("a future release", "CloseEncounters")
   end
 
   def self.configure
@@ -44,6 +54,30 @@ module CloseEncounters
     # Instrument after the transaction commits so subscribers see a persisted event.
     instrument(name, created) if created
     created
+  end
+
+  # Record the outcome of an HTTP request to a service straight from the
+  # client's response object, using an adapter to read the status and body.
+  #
+  # An adapter is any object responding to #status(response) and
+  # #body(response); CloseEncounters::Adapters::NetHTTP ships for Net::HTTP.
+  # Delegates to #scan when a verifier is given, otherwise #contact.
+  #
+  #   CloseEncounters.record("LRS", response, adapter: Adapters::NetHTTP)
+  #   CloseEncounters.record("LRS", response, adapter: Adapters::NetHTTP, verifier: Validator)
+  #
+  # @param name [String] the name of the service
+  # @param response [Object] the HTTP client's response object
+  # @param adapter [#status, #body] reads the status and body from the response
+  # @param verifier [#call, #to_s, nil] when given, records a verified scan
+  def record(name, response, adapter:, verifier: nil)
+    status = adapter.status(response)
+    body = adapter.body(response)
+    if verifier
+      scan(name, status:, response: body, verifier:)
+    else
+      contact(name, status:, response: body)
+    end
   end
 
   # Publish an ActiveSupport::Notifications event whenever a new
