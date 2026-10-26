@@ -7,6 +7,8 @@ module CloseEncounters
     def setup
       # Save original ENV values
       @original_auto_contact = ENV["CLOSE_ENCOUNTERS_AUTO_CONTACT"]
+      # Drop the configuration memoized at boot so each test reads ENV fresh
+      CloseEncounters.remove_instance_variable(:@configuration) if CloseEncounters.instance_variable_defined?(:@configuration)
     end
 
     def teardown
